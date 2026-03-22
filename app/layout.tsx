@@ -1,45 +1,46 @@
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
-import './globals.css'
+import type { Metadata } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import "./globals.css";
+import Cursor from "@/components/Cursor";
+import { Toaster } from "sonner"; // This is for your popups
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+// Import your beautiful new font
+const jakarta = Plus_Jakarta_Sans({ 
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+});
 
 export const metadata: Metadata = {
-  title: 'Jay Purohit | Full Stack Web Developer',
-  description: 'Professional portfolio of Jay Purohit - Full Stack Web Developer specializing in React, JavaScript, Node.js, and building modern web applications.',
-  generator: 'v0.app',
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
-}
+  title: "Jay Purohit | Full Stack Developer",
+  description: "Portfolio of Jay Purohit, a Full Stack Web Developer building modern web applications.",
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="font-sans antialiased dark bg-background text-foreground">
-        {children}
-        <Analytics />
+    <html lang="en" className="scroll-smooth">
+      <body className={`${jakarta.className} bg-[#0B1120] text-slate-300 antialiased selection:bg-cyan-500/30 selection:text-cyan-200`}>
+        
+        {/* Your magical custom cursor */}
+        <Cursor />
+
+        {/* Your website content */}
+        <main className="relative z-10">
+          {children}
+        </main>
+
+        {/* The popup notification system */}
+        <Toaster 
+          theme="dark" 
+          position="bottom-right"
+          toastOptions={{
+            style: { background: '#0f172a', border: '1px solid #1e293b', color: '#fff' }
+          }} 
+        />
       </body>
     </html>
-  )
+  );
 }
