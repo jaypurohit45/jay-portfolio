@@ -4,9 +4,10 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function generatePortfolioContent(userPrompt: string) {
   try {
-    // Initialize Gemini (Make sure you add GEMINI_API_KEY to your Vercel/local .env file!)
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    // Updated to the newest model tier that new Google API keys are assigned to
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
       You are an expert tech recruiter and copywriter. Based on the user's input, create a professional portfolio profile. 
@@ -21,7 +22,6 @@ export async function generatePortfolioContent(userPrompt: string) {
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
     
-    // Clean up the response in case Gemini adds markdown formatting
     const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
     return JSON.parse(cleanJson);
 

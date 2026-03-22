@@ -15,14 +15,39 @@ import {
   generateAboutCode, 
   generateContactCode, 
   generatePackageJsonCode, 
-  generateEnvCode 
+  generateEnvCode,
+  generateTailwindConfigCode,
+  generatePostcssConfigCode,
+  generateTsconfigCode,
+  generateNextConfigCode,
+  generateLayoutCode,
+  generatePageCode,
+  generateGlobalsCssCode,
+  generateButtonCode,
+  generateCursorCode,
+  generateSkillsCode,
+  generateProjectsCode,
+  generateProblemSolvedCode,
+  generateCardCode
 } from "./templates";
 
 export default function GeneratorPage() {
+  // 👇 ALL HOOKS AND STATE MUST BE INSIDE THIS FUNCTION 👇
+  
   const [isGenerating, setIsGenerating] = useState(false);
   const [formData, setFormData] = useState({
     name: "", profession: "", github: "", linkedin: "", web3forms: "", aiPrompt: "",
   });
+  
+  // Image State
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  // File Upload Handler
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -39,7 +64,7 @@ export default function GeneratorPage() {
       const aiContent = await generatePortfolioContent(formData.aiPrompt);
 
       // 2. Combine user inputs with AI generated text
-      const portfolioData = {
+      const portfolioData: any = {
         ...formData,
         aiTagline: aiContent.tagline,
         aiBio: aiContent.bio,
@@ -49,18 +74,52 @@ export default function GeneratorPage() {
       toast.loading("Zipping up your Next.js source code...", { id: "generate" });
       const zip = new JSZip();
 
-      // Create Folder Structure
+      // --- FOLDER STRUCTURE ---
       const appFolder = zip.folder("app");
       const componentsFolder = zip.folder("components");
+      const uiFolder = componentsFolder?.folder("ui"); // Phase 3 UI folder
+      const publicFolder = zip.folder("public");       // NEW: Public folder for the image
 
-      // Inject generated code into the virtual files
+      // --- ADD THE IMAGE (IF UPLOADED) ---
+      if (imageFile) {
+        // Keep the original extension (e.g., .jpg, .png, .webp)
+        const fileExtension = imageFile.name.split('.').pop();
+        const imageName = `profile.${fileExtension}`;
+        
+        // Add the actual image file to the public folder in the ZIP
+        publicFolder?.file(imageName, imageFile);
+        
+        // Save the name so our templates know what to call it!
+        portfolioData.imageName = `/${imageName}`;
+      } else {
+        portfolioData.imageName = ""; // No image uploaded
+      }
+
+      // --- PHASE 2: APP ROUTE FILES ---
+      appFolder?.file("layout.tsx", generateLayoutCode(portfolioData));
+      appFolder?.file("page.tsx", generatePageCode());
+      appFolder?.file("globals.css", generateGlobalsCssCode());
+
+      // --- PHASE 3: UI COMPONENTS ---
+      uiFolder?.file("button.tsx", generateButtonCode());
+      uiFolder?.file("card.tsx", generateCardCode());
+      componentsFolder?.file("Cursor.tsx", generateCursorCode());
+
+      // --- PHASE 1 & 3: PAGE SECTIONS ---
       componentsFolder?.file("hero.tsx", generateHeroCode(portfolioData));
       componentsFolder?.file("about.tsx", generateAboutCode(portfolioData));
+      componentsFolder?.file("skills.tsx", generateSkillsCode());
+      componentsFolder?.file("problems-solved.tsx", generateProblemSolvedCode());
+      componentsFolder?.file("projects.tsx", generateProjectsCode());
       componentsFolder?.file("contact.tsx", generateContactCode(portfolioData));
       
-      // Add configuration files
+      // --- CONFIGURATION FILES ---
       zip.file("package.json", generatePackageJsonCode(portfolioData));
       zip.file(".env.local", generateEnvCode(portfolioData));
+      zip.file("tailwind.config.ts", generateTailwindConfigCode());
+      zip.file("postcss.config.js", generatePostcssConfigCode());
+      zip.file("tsconfig.json", generateTsconfigCode());
+      zip.file("next.config.mjs", generateNextConfigCode());
 
       // 4. Download the ZIP file to the user's computer
       const content = await zip.generateAsync({ type: "blob" });
@@ -183,6 +242,19 @@ export default function GeneratorPage() {
                 onChange={handleChange}
                 placeholder="Paste key to enable the contact form..."
                 className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+              />
+            </div>
+            
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                <User className="w-4 h-4 text-cyan-400" /> Profile Picture
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20"
               />
             </div>
 
